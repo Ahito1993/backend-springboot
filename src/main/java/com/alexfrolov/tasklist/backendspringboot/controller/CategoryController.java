@@ -3,11 +3,13 @@ package com.alexfrolov.tasklist.backendspringboot.controller;
 import com.alexfrolov.tasklist.backendspringboot.entity.Category;
 import com.alexfrolov.tasklist.backendspringboot.entity.Priority;
 import com.alexfrolov.tasklist.backendspringboot.repository.CategoryRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/category")
@@ -53,7 +55,29 @@ public class CategoryController {
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Category> getById (@PathVariable Long id) {
-        return ResponseEntity.ok(categoryRepository.findById(id).get());
+
+        Category category;
+
+        try {
+            category = categoryRepository.findById(id).get();
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+            return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(category);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Category> deleteById (@PathVariable Long id) {
+        try {
+            categoryRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
 }

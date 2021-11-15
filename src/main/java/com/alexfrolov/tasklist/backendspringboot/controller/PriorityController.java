@@ -1,12 +1,15 @@
 package com.alexfrolov.tasklist.backendspringboot.controller;
 
+import com.alexfrolov.tasklist.backendspringboot.entity.Category;
 import com.alexfrolov.tasklist.backendspringboot.entity.Priority;
 import com.alexfrolov.tasklist.backendspringboot.repository.PriorityRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/priority")
@@ -60,6 +63,28 @@ public class PriorityController {
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Priority> getById (@PathVariable Long id) {
-        return ResponseEntity.ok(priorityRepository.findById(id).get());
+
+        Priority priority;
+
+        try {
+            priority = priorityRepository.findById(id).get();
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+            return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(priority);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Priority> deleteById (@PathVariable Long id) {
+        try {
+            priorityRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
