@@ -2,10 +2,9 @@ package com.alexfrolov.tasklist.backendspringboot.controller;
 
 import com.alexfrolov.tasklist.backendspringboot.entity.Priority;
 import com.alexfrolov.tasklist.backendspringboot.repository.PriorityRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @RequestMapping("/priority")
 public class PriorityController {
 
-    private PriorityRepository priorityRepository;
+    private final PriorityRepository priorityRepository;
 
     public PriorityController(PriorityRepository priorityRepository) {
         this.priorityRepository = priorityRepository;
@@ -21,10 +20,20 @@ public class PriorityController {
 
     @GetMapping("/test")
     public List<Priority> test () {
+        return priorityRepository.findAll();
+    }
 
-        List<Priority> list = priorityRepository.findAll();
-        System.out.println("List = " + list);
+    @PostMapping("/add")
+    public ResponseEntity<Priority> addPriority (@RequestBody Priority priority) {
 
-        return list;
+        if (priority.getId() != null && priority.getId() != 0) {
+            return new ResponseEntity("redundant param: id must be null", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
+            return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        return ResponseEntity.ok(priorityRepository.save(priority));
     }
 }
