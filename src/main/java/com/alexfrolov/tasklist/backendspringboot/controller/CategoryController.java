@@ -1,6 +1,7 @@
 package com.alexfrolov.tasklist.backendspringboot.controller;
 
 import com.alexfrolov.tasklist.backendspringboot.entity.Category;
+import com.alexfrolov.tasklist.backendspringboot.entity.Priority;
 import com.alexfrolov.tasklist.backendspringboot.repository.CategoryRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,11 @@ public class CategoryController {
         }
 
         return ResponseEntity.ok(categoryRepository.save(category));
+    }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Category> getById (@PathVariable Long id) {
+        return ResponseEntity.ok(categoryRepository.findById(id).get());
     }
 
 }

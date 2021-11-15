@@ -57,4 +57,9 @@ public class PriorityController {
 
         return ResponseEntity.ok(priorityRepository.save(priority));
     }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Priority> getById (@PathVariable Long id) {
+        return ResponseEntity.ok(priorityRepository.findById(id).get());
+    }
 }
