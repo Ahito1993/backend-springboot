@@ -1,6 +1,5 @@
 package com.alexfrolov.tasklist.backendspringboot.controller;
 
-import com.alexfrolov.tasklist.backendspringboot.entity.Category;
 import com.alexfrolov.tasklist.backendspringboot.entity.Priority;
 import com.alexfrolov.tasklist.backendspringboot.repository.PriorityRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -21,9 +20,9 @@ public class PriorityController {
         this.priorityRepository = priorityRepository;
     }
 
-    @GetMapping("/test")
+    @GetMapping("/all")
     public List<Priority> test () {
-        return priorityRepository.findAll();
+        return priorityRepository.findAllByOrderByIdAsc();
     }
 
     @PostMapping("/add")
