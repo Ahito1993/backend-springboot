@@ -14,6 +14,9 @@ import javax.persistence.Id;
 @Setter
 @EqualsAndHashCode
 public class Stat {
+
+    // в этой таблице всего 1 запись, которая обновляется, но никогда не удаляется
+    // there is only 1 record in this table that is updated but never deleted
     private Long id;
     private Long completedTotal;
     private Long uncompletedTotal;
