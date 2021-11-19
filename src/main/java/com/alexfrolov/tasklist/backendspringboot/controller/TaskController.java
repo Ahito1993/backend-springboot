@@ -1,9 +1,12 @@
 package com.alexfrolov.tasklist.backendspringboot.controller;
 
 import com.alexfrolov.tasklist.backendspringboot.entity.Task;
-import com.alexfrolov.tasklist.backendspringboot.repository.TaskRepository;
 import com.alexfrolov.tasklist.backendspringboot.search.TaskSearchValues;
+import com.alexfrolov.tasklist.backendspringboot.service.TaskService;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,21 +24,21 @@ public class TaskController {
 
     // доступ к данным из БД
     // access to data from the database
-    private final TaskRepository taskRepository;
+    private final TaskService taskService;
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
     // automatic implementation of a class instance via the constructor
     // we don't use @Autowired for a class variable, because "Field injection is not recommended "
-    public TaskController(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
     }
-
+    
     @GetMapping("/all")
     public ResponseEntity<List<Task>> findAll() {
 
         showMethodName("TaskController: findAll() ------------------------------------------------------");
-        return ResponseEntity.ok(taskRepository.findAll());
+        return ResponseEntity.ok(taskService.findAll());
     }
 
     @PostMapping("/add")
@@ -55,7 +58,7 @@ public class TaskController {
             return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(taskRepository.save(task));
+        return ResponseEntity.ok(taskService.addTask(task));
     }
 
     @PutMapping("/update")
@@ -77,7 +80,7 @@ public class TaskController {
 
         // save работает как на добавление, так и на обновление
         // save works for both adding and updating
-        taskRepository.save(task);
+        taskService.addTask(task);
 
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -89,7 +92,7 @@ public class TaskController {
         // try-catch используется для отображения своего текста, а не stacktrace
         // try-catch is used for displaying its own text, not stacktrace
         try {
-            taskRepository.deleteById(id);
+            taskService.deleteById(id);
         }catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
             return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
@@ -107,7 +110,7 @@ public class TaskController {
         // try-catch используется для отображения своего текста, а не stacktrace
         // try-catch is used for displaying its own text, not stacktrace
         try {
-            task = taskRepository.findById(id).get();
+            task = taskService.findById(id);
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
@@ -117,7 +120,7 @@ public class TaskController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<Task>> search (@RequestBody TaskSearchValues taskSearchValues) {
+    public ResponseEntity<Page<Task>> search (@RequestBody TaskSearchValues taskSearchValues) {
 
         showMethodName("TaskController: search() ---------------------------------------------------");
 
@@ -126,7 +129,27 @@ public class TaskController {
         Long priorityId = taskSearchValues.getPriorityId() != null ? taskSearchValues.getPriorityId() : null;
         Long categoryId = taskSearchValues.getCategoryId() != null ? taskSearchValues.getCategoryId() : null;
 
-        return ResponseEntity.ok(taskRepository.findByParams(title, completed, priorityId, categoryId));
+        String sortColumn = taskSearchValues.getSortColumn() != null ? taskSearchValues.getSortColumn() : null;
+        String sortDirection = taskSearchValues.getSortDirection() != null ? taskSearchValues.getSortColumn() : null;
+
+        Integer pageNumber = taskSearchValues.getPageNumber() != null ? taskSearchValues.getPageNumber() : null;
+        Integer pageSize = taskSearchValues.getPageSize() != null ? taskSearchValues.getPageSize() : null;
+
+        Sort.Direction direction = sortDirection == null || sortDirection.trim().length() == 0 || sortDirection.trim().equals("ask") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        // объект сортировки
+        // object for sorting
+        Sort sort = Sort.by(direction, sortColumn);
+
+        // объект для разбиения на страницы
+        // object for pagination
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+
+        // результат запроса с постраничным выводом
+        // query result with paginated output
+        Page result = taskService.findByParams(title, completed, priorityId, categoryId, pageRequest);
+
+        return ResponseEntity.ok(result);
     }
 
 }

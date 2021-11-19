@@ -3,12 +3,12 @@ package com.alexfrolov.tasklist.backendspringboot.controller;
 import com.alexfrolov.tasklist.backendspringboot.entity.Priority;
 import com.alexfrolov.tasklist.backendspringboot.repository.PriorityRepository;
 import com.alexfrolov.tasklist.backendspringboot.search.PrioritySearchValues;
+import com.alexfrolov.tasklist.backendspringboot.service.PriorityService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.image.RescaleOp;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -23,21 +23,21 @@ public class PriorityController {
 
     // доступ к данным из БД
     // access to data from the database
-    private final PriorityRepository priorityRepository;
+    private final PriorityService priorityService;
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
     // automatic implementation of a class instance via the constructor
     // we don't use @Autowired for a class variable, because "Field injection is not recommended "
-    public PriorityController(PriorityRepository priorityRepository) {
-        this.priorityRepository = priorityRepository;
+    public PriorityController(PriorityService priorityService) {
+        this.priorityService = priorityService;
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<Priority>> findAll() {
 
         showMethodName("PriorityController: findAll() ------------------------------------------------------");
-        return ResponseEntity.ok(priorityRepository.findAllByOrderByIdAsc());
+        return ResponseEntity.ok(priorityService.findAll());
     }
 
     @PostMapping("/add")
@@ -64,7 +64,7 @@ public class PriorityController {
 
         // save работает как на добавление, так и на обновление
         // save works for both adding and updating
-        return ResponseEntity.ok(priorityRepository.save(priority));
+        return ResponseEntity.ok(priorityService.addPriority(priority));
     }
 
     @PutMapping("/update")
@@ -91,7 +91,7 @@ public class PriorityController {
 
         // save работает как на добавление, так и на обновление
         // save works for both adding and updating
-        priorityRepository.save(priority);
+        priorityService.updatePriority(priority);
 
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -107,7 +107,7 @@ public class PriorityController {
         // try-catch используется для отображения своего текста, а не stacktrace
         // try-catch is used for displaying its own text, not stacktrace
         try {
-            priority = priorityRepository.findById(id).get();
+            priority = priorityService.findById(id);
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
@@ -125,7 +125,7 @@ public class PriorityController {
         // try-catch используется для отображения своего текста, а не stacktrace
         // try-catch is used for displaying its own text, not stacktrace
         try {
-            priorityRepository.deleteById(id);
+            priorityService.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
             return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
@@ -142,6 +142,6 @@ public class PriorityController {
         showMethodName("PriorityController: search() ---------------------------------------------------");
         // если вместо текста будет пусто или null - вернутся все приоритеты
         // if the text is empty or null, all priorities will be returned
-        return ResponseEntity.ok(priorityRepository.findByTitle(prioritySearchValues.getText()));
+        return ResponseEntity.ok(priorityService.findByTitle(prioritySearchValues.getText()));
     }
 }

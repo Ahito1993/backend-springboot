@@ -2,6 +2,7 @@ package com.alexfrolov.tasklist.backendspringboot.controller;
 
 import com.alexfrolov.tasklist.backendspringboot.entity.Stat;
 import com.alexfrolov.tasklist.backendspringboot.repository.StatRepository;
+import com.alexfrolov.tasklist.backendspringboot.service.StatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,7 +14,7 @@ import static com.alexfrolov.tasklist.backendspringboot.util.MyLogger.showMethod
 @RestController
 public class StatController {
 
-    private final StatRepository statRepository;
+    private final StatService statService;
 
     // id всегда равен 1
     // id always 1
@@ -23,15 +24,15 @@ public class StatController {
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
     // automatic implementation of a class instance via the constructor
     // we don't use @Autowired for a class variable, because "Field injection is not recommended "
-    public StatController(StatRepository statRepository) {
-        this.statRepository = statRepository;
+    public StatController(StatService statService) {
+        this.statService = statService;
     }
 
     @GetMapping("/stat")
     public ResponseEntity<Stat> getById () {
 
         showMethodName("StatController: getById() ---------------------------------------------------");
-        return ResponseEntity.ok(statRepository.findById(defaultId).get());
+        return ResponseEntity.ok(statService.findById(defaultId));
     }
 
 

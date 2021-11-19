@@ -3,6 +3,7 @@ package com.alexfrolov.tasklist.backendspringboot.controller;
 import com.alexfrolov.tasklist.backendspringboot.entity.Category;
 import com.alexfrolov.tasklist.backendspringboot.repository.CategoryRepository;
 import com.alexfrolov.tasklist.backendspringboot.search.CategorySearchValues;
+import com.alexfrolov.tasklist.backendspringboot.service.CategoryService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,21 +22,21 @@ public class CategoryController {
 
     // доступ к данным из БД
     // access to data from the database
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
     // automatic implementation of a class instance via the constructor
     // we don't use @Autowired for a class variable, because "Field injection is not recommended "
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<Category>> findAll () {
 
         showMethodName("CategoryController: findAll() ------------------------------------------------------");
-        return ResponseEntity.ok(categoryRepository.findAllByOrderByTitleAsc());
+        return ResponseEntity.ok(categoryService.findAllByOrderByTitleAsc());
     }
 
     @PostMapping("/add")
@@ -56,7 +57,7 @@ public class CategoryController {
 
         // save работает как на добавление, так и на обновление
         // save works for both adding and updating
-        return ResponseEntity.ok(categoryRepository.save(category));
+        return ResponseEntity.ok(categoryService.addCategory(category));
     }
 
     @PutMapping("/update")
@@ -77,7 +78,7 @@ public class CategoryController {
 
         // save работает как на добавление, так и на обновление
         // save works for both adding and updating
-        categoryRepository.save(category);
+        categoryService.updateCategory(category);
 
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -93,7 +94,7 @@ public class CategoryController {
         // try-catch используется для отображения своего текста, а не stacktrace
         // try-catch is used for displaying its own text, not stacktrace
         try {
-            category = categoryRepository.findById(id).get();
+            category = categoryService.findById(id);
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
@@ -111,7 +112,7 @@ public class CategoryController {
         // try-catch используется для отображения своего текста, а не stacktrace
         // try-catch is used for displaying its own text, not stacktrace
         try {
-            categoryRepository.deleteById(id);
+            categoryService.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
             return new ResponseEntity("id " + id + " not found", HttpStatus.BAD_REQUEST);
@@ -128,7 +129,7 @@ public class CategoryController {
         showMethodName("CategoryController: search() ---------------------------------------------------");
         // если вместо текста будет пусто или null - вернутся все категории
         // if the text is empty or null, all categories will be returned
-        return ResponseEntity.ok(categoryRepository.findByTitle(categorySearchValues.getText()));
+        return ResponseEntity.ok(categoryService.findByTitle(categorySearchValues.getText()));
     }
 
 

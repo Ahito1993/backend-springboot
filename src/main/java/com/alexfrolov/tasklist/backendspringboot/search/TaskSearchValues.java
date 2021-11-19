@@ -20,4 +20,16 @@ public class TaskSearchValues {
     private Integer completed;
     private Long priorityId;
     private Long categoryId;
+
+    // постраничность
+    // pagination
+    private Integer pageNumber;
+    private Integer pageSize;
+
+    // сортировка
+    // sorting
+    private String sortColumn;
+    private String sortDirection;
+
+
 }
