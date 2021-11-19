@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.image.RescaleOp;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -33,10 +34,10 @@ public class PriorityController {
     }
 
     @GetMapping("/all")
-    public List<Priority> findAll() {
+    public ResponseEntity<List<Priority>> findAll() {
 
         showMethodName("PriorityController: findAll() ------------------------------------------------------");
-        return priorityRepository.findAllByOrderByIdAsc();
+        return ResponseEntity.ok(priorityRepository.findAllByOrderByIdAsc());
     }
 
     @PostMapping("/add")
@@ -90,7 +91,9 @@ public class PriorityController {
 
         // save работает как на добавление, так и на обновление
         // save works for both adding and updating
-        return ResponseEntity.ok(priorityRepository.save(priority));
+        priorityRepository.save(priority);
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     // параметр id передается не в BODY запроса, а в самом URL

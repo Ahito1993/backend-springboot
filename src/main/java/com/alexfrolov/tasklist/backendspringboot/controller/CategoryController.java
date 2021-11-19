@@ -32,10 +32,10 @@ public class CategoryController {
     }
 
     @GetMapping("/all")
-    public List<Category> findAll () {
+    public ResponseEntity<List<Category>> findAll () {
 
         showMethodName("CategoryController: findAll() ------------------------------------------------------");
-        return categoryRepository.findAllByOrderByTitleAsc();
+        return ResponseEntity.ok(categoryRepository.findAllByOrderByTitleAsc());
     }
 
     @PostMapping("/add")
@@ -77,7 +77,9 @@ public class CategoryController {
 
         // save работает как на добавление, так и на обновление
         // save works for both adding and updating
-        return ResponseEntity.ok(categoryRepository.save(category));
+        categoryRepository.save(category);
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     // параметр id передается не в BODY запроса, а в самом URL
